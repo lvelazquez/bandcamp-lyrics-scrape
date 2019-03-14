@@ -42,7 +42,7 @@ const getAlbum = async album => {
         const time = $('span.time', $trackRow)
           .text()
           .trim()
-        const lyrics = $(`#_lyrics_${index + 1}`).text()
+        const lyrics = $(`#_lyrics_${index + 1}`).text().trim()
         return { order, title, time, lyrics: lyrics !== '' ? lyrics : false }
       })
       .get()
@@ -58,11 +58,11 @@ const getAlbum = async album => {
   }
 }
 
-async function getAlbums () {
+const getAlbums = async () => {
   // get discography
   const website = await rp(`${baseUrl}/music`)
   const $ = cheerio.load(website)
-  const albums = $('.music-grid-item > a')
+  const albumData = $('.music-grid-item > a')
     .map((index, el) => {
       const title = $(el)
         .text()
@@ -76,9 +76,7 @@ async function getAlbums () {
     })
     .get()
 
-  return albums.map(getAlbum)
+  const albums = await Promise.all([...albumData.map(getAlbum)])
+  fs.writeFile('albums.json', JSON.stringify(albums))
 }
-
-const albums = getAlbums()
-// write to file in memory
-console.log(albums)
+getAlbums()
