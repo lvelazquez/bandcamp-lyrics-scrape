@@ -1,10 +1,10 @@
 const fs = require('fs')
+const r = require('request')
 const rp = require('request-promise')
 const artistHandler = 'elmedio'
 const cheerio = require('cheerio')
 const baseUrl = `http://${artistHandler}.bandcamp.com`
 const _ = require('lodash')
-let albumCounter = 0
 
 /*
 
@@ -18,11 +18,34 @@ let albumCounter = 0
 }
 
 */
-const getSongLyrics = lyricsRow => {
-  if (lyricsRow.hasClass('lyricsRow')) {
-    return lyricsRow.text()
-  } else {
-    return false
+
+const downloadImage = function (uri, filename, callback) {
+  r.head(uri, function (err, res, body) {
+    console.log('content-type:', res.headers['content-type'])
+    console.log('content-length:', res.headers['content-length'])
+
+    r(uri)
+      .pipe(fs.createWriteStream(filename))
+      .on('close', callback)
+  })
+}
+const getAlbumImage = async (src, title) => {
+  const albumSlug = title
+    .toLowerCase()
+    .replace(/ /g, '-')
+    .replace(/[^\w-]+/g, '')
+
+  try {
+    const imgSuccess = await downloadImage(src, `./data/images/${albumSlug}.jpg`, done=> {
+      console.log('done')
+    })
+    if (imgSuccess) {
+      return albumSlug
+    } else {
+      return false
+    }
+  } catch (err) {
+    console.log(err)
   }
 }
 const getAlbum = async album => {
@@ -30,6 +53,7 @@ const getAlbum = async album => {
     const albumSite = await rp(`${baseUrl}${album.slug}`)
     const $ = cheerio.load(albumSite)
     const imgSrc = $('#tralbumArt > a > img').attr('src')
+    const imgId = await getAlbumImage(imgSrc, album.title)
     // get image download and put into folder
     const $container = $('#trackInfo')
     const date = $('meta[itemprop=datePublished]', $container).attr('content')
@@ -42,8 +66,16 @@ const getAlbum = async album => {
         const time = $('span.time', $trackRow)
           .text()
           .trim()
-        const lyrics = $(`#_lyrics_${index + 1}`).text().trim()
-        return { order, title, time, lyrics: lyrics !== '' ? lyrics : false }
+        const lyrics = $(`#_lyrics_${index + 1}`)
+          .text()
+          .trim()
+        return {
+          order,
+          title,
+          time,
+          imgId,
+          lyrics: lyrics !== '' ? lyrics : false
+        }
       })
       .get()
 
@@ -77,6 +109,6 @@ const getAlbums = async () => {
     .get()
 
   const albums = await Promise.all([...albumData.map(getAlbum)])
-  fs.writeFile('albums.json', JSON.stringify(albums))
+  fs.writeFile('./data/albums.json', JSON.stringify(albums))
 }
 getAlbums()

@@ -1,4 +1,4 @@
 .history/
 .jshintrc
 node_modules/
-albums.json
+data/
