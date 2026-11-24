@@ -1,4 +1,6 @@
+node_modules/
+dist/
+data/
 .history/
 .jshintrc
-node_modules/
-data/
+*.log
