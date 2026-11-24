@@ -1,18 +1,42 @@
 {
   "name": "bandcamp-lyrics-scrape",
   "version": "1.0.0",
-  "description": "scrapes lyrics from bandcamp ",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "Scrape the discography, track list and lyrics of a Bandcamp artist into JSON",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "bandcamp-lyrics-scrape": "dist/cli.js"
   },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "start": "node dist/cli.js"
+  },
+  "engines": {
+    "node": ">=20.18.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lvelazquez/bandcamp-lyrics-scrape.git"
+  },
+  "keywords": [
+    "bandcamp",
+    "lyrics",
+    "scraper",
+    "cli"
+  ],
   "author": "Leonardo Velazquez",
   "license": "ISC",
-  "devDependencies": {},
   "dependencies": {
-    "cheerio": "^1.0.0-rc.2",
-    "lodash": "^4.17.11",
-    "request": "^2.88.0",
-    "request-promise": "^4.2.4"
+    "cheerio": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1"
   }
 }
